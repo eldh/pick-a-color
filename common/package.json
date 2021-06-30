@@ -1,0 +1,15 @@
+{
+  "version": "0.0.0",
+  "name": "linear-common",
+  "scripts": {},
+  "dependencies": {
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "react-select": "4.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "typescript": "^4.3.2"
+  }
+}
