@@ -1,5 +1,5 @@
 import * as React from "react";
 
 export function Select() {
-  return <>select new</>;
+  return <>select</>;
 }
