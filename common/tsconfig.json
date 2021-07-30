@@ -2,7 +2,6 @@
   "extends": "../config/tsconfig",
   "compilerOptions": {
     "target": "es2017",
-    "baseUrl": ".",
     "lib": ["DOM", "es2017", "DOM.iterable", "esnext.asynciterable"],
     "allowJs": false,
     "skipLibCheck": false,
@@ -18,14 +17,8 @@
     "outDir": "./build",
     "downlevelIteration": true,
     "useDefineForClassFields": false,
-    "paths": {
-      "~/*": ["src/*"],
-      // "linear-common": ["../common/src/index.tsx"]
-      "linear-common/*": ["../common/src/*"]
-    },
+    "paths": {},
     "jsx": "react"
   },
-
-  "include": ["./src"],
-  "exclude": ["node_modules"]
+  "include": ["./src"]
 }
