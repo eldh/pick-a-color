@@ -2,26 +2,21 @@
   "name": "vitt",
   "version": "0.0.3",
   "private": true,
-  "workspaces": [
-    "./*"
-  ],
   "scripts": {
-    "start": "lerna run start --parallel",
-    "bootstrap": "lerna bootstrap",
-    "tsc": "lerna run tsc --parallel",
-    "build": "lerna run build --parallel",
+    "start": "vite",
+    "build": "vite build",
+    "serve": "DEBUG=\"vite:sourcemap\" vite preview",
     "prettier": "prettier --write **/*.{json,ts,tsx,js,jsx}"
   },
   "resolutions": {
-    "@types/react-dom": "16.9.9",
     "react": "17.0.1",
-    "react-dom": "17.0.1",
-    "styled-components": "5.1.0",
-    "typescript": "4.0.2"
+    "react-dom": "17.0.1"
   },
   "devDependencies": {
     "lerna": "^3.22.1",
-    "prettier": "2.0.2"
+    "vite": "^2.4.4",
+    "@vitejs/plugin-react-refresh": "*",
+    "prettier": "2.3.2"
   },
   "engines": {
     "node": ">=14.15",
