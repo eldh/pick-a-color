@@ -8,15 +8,21 @@
     "serve": "DEBUG=\"vite:sourcemap\" vite preview",
     "prettier": "prettier --write **/*.{json,ts,tsx,js,jsx}"
   },
-  "resolutions": {
-    "react": "17.0.1",
-    "react-dom": "17.0.1"
+  "dependencies": {
+    "@davesnx/styled-ppx": "^0.25.0",
+    "@rescript/react": "^0.10.3",
+    "bs-css": "^15.0.1",
+    "bs-css-emotion": "^4.0.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
   },
   "devDependencies": {
-    "lerna": "^3.22.1",
-    "vite": "^2.4.4",
+    "@types/react": "^17.0.19",
+    "@types/react-dom": "^17.0.9",
     "@vitejs/plugin-react-refresh": "*",
-    "prettier": "2.3.2"
+    "prettier": "2.3.2",
+    "rescript": "^9.1.4",
+    "vite": "^2.4.4"
   },
   "engines": {
     "node": ">=14.15",

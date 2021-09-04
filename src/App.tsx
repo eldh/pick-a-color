@@ -1,10 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./App.css";
-import "./Markdown";
-import hljs from "highlight.js";
-console.log(hljs.highlightAuto("<span>Hello World!</span>"));
-import favicon from "./favicon.png";
+import { make as Test } from "./Slider.bs";
 
 function App() {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -23,22 +19,9 @@ function App() {
     }
   }, [hue]);
   return (
-    <>
-      <canvas ref={canvasRef} id="tutorial" width="450" height="450" />
-      <br />
-      <input
-        type="range"
-        min="1"
-        max="150"
-        value={hue}
-        onChange={(e) =>
-          ReactDOM.unstable_batchedUpdates(() =>
-            setHue(parseInt(e.target.value, 10))
-          )
-        }
-      />
-      {hue}
-    </>
+    <div style={{ margin: "40px" }}>
+      <Test />
+    </div>
   );
 }
 
