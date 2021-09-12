@@ -214,7 +214,6 @@ let toCss = x =>
   }
 
 let p3ToString = p3 => {
-  Js.log2("p3", p3)
   switch p3 {
   | #p3(r, g, b, _a) =>
     "color(display-p3 " ++

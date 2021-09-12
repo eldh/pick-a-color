@@ -3,13 +3,9 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById("root")
-);
-
+// @ts-ignore experimental
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
     navigator.serviceWorker.register("/sw.js?v=2").then(

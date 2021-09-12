@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { make as Test } from "./Slider.bs";
+import { make as Picker } from "./Picker.bs";
 
 function App() {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -20,7 +20,7 @@ function App() {
   }, [hue]);
   return (
     <div style={{ margin: "40px" }}>
-      <Test />
+      <Picker />
     </div>
   );
 }

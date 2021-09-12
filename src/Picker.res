@@ -1,65 +1,29 @@
 type canvasContext = {@set "fillStyle": string, "fillRect": (. int, int, int, int) => unit}
 type canvasEl = {"getContext": (. string) => canvasContext}
+let bump = v => v +. (31.25 -. Js.Math.pow_float(~base=v -. 62.5, ~exp=2.) /. 125.)
+let bumpY = v => v -. (31.25 -. Js.Math.pow_float(~base=v -. 62.5, ~exp=2.) /. 125.)
+module Styles = {
+  open CssJs
+
+  let test = bg =>
+    style(. [
+      position(#relative),
+      width(px(50)),
+      height(px(50)),
+      unsafe("background", bg),
+      borderRadius(#px(2)),
+      boxShadow(Shadow.box(~y=px(1), ~blur=px(2), rgba(0, 0, 0, #num(0.5)))),
+    ])
+}
+
 @react.component
 let make = () => {
-  let canvasRef = React.useRef(Js.Nullable.null)
-  let (lightness, setLightness) = React.useState(() => 50)
-  let (a, setA) = React.useState(() => 10)
-  let (b, setB) = React.useState(() => 10)
-  Js.log3(lightness, a, b)
-  React.useEffect1(() => {
-    canvasRef.current
-    ->Js.Nullable.toOption
-    ->Belt.Option.forEach(c => {
-      let ctx = c["getContext"](. "2d")
-      ctx["fillStyle"] =
-        Lab.toP3(
-          #lab(
-            lightness->float_of_int,
-            a->float_of_int -. 255. /. 2.,
-            b->float_of_int -. 255. /. 2.,
-            1.,
-          ),
-        )->Lab.p3ToString
-      ctx["fillRect"](. 0, 0, 300, 300)
-    })
-    None
-  }, [lightness, a, b])
+  let (lightness, setLightness) = React.useState(() => 100)
+  let (saturation, setSaturation) = React.useState(() => 100)
+  let (hue, setHue) = React.useState(() => 0.)
 
   <>
-    <canvas ref={ReactDOM.Ref.domRef(canvasRef->Obj.magic)} width="450" height="450" />
-    <br />
-    <input
-      type_="range"
-      min="1"
-      max="100"
-      value={lightness->Belt.Int.toString}
-      onChange={e => {
-        let value = 0 + (e->ReactEvent.Form.target)["value"]->Belt.Option.getWithDefault(100)
-        setLightness(_ => value)
-      }}
-    />
-    <br />
-    <input
-      type_="range"
-      min="0"
-      max="255"
-      value={a->Belt.Int.toString}
-      onChange={e => {
-        let value = (e->ReactEvent.Form.target)["value"]->Belt.Option.getWithDefault(0)
-        setA(_ => value)
-      }}
-    />
-    <br />
-    <input
-      type_="range"
-      min="0"
-      max="255"
-      value={b->Belt.Int.toString}
-      onChange={e => {
-        let value = (e->ReactEvent.Form.target)["value"]->Belt.Option.getWithDefault(0)
-        setB(_ => value)
-      }}
-    />
+    <ShadePicker hue saturation lightness setSaturation setLightness />
+    <HueSlider value=hue setValue=setHue />
   </>
 }

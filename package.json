@@ -13,8 +13,8 @@
     "@rescript/react": "^0.10.3",
     "bs-css": "^15.0.1",
     "bs-css-emotion": "^4.0.1",
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react": "^18.0.0-alpha-1314299c7-20210901",
+    "react-dom": "^18.0.0-alpha-1314299c7-20210901"
   },
   "devDependencies": {
     "@types/react": "^17.0.19",
