@@ -18,12 +18,13 @@ module Styles = {
 
 @react.component
 let make = () => {
-  let (lightness, setLightness) = React.useState(() => 100)
-  let (saturation, setSaturation) = React.useState(() => 100)
+  let (lightness, setLightness) = React.useState(() => 1.)
+  let (saturation, setSaturation) = React.useState(() => 1.)
   let (hue, setHue) = React.useState(() => 0.)
-
+  let color = Lab.hslToP3(#hsl(hue, saturation, lightness))
   <>
     <ShadePicker hue saturation lightness setSaturation setLightness />
     <HueSlider value=hue setValue=setHue />
+    <ColorBox color />
   </>
 }

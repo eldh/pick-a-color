@@ -1,8 +1,12 @@
 type canvasContext = {@set "fillStyle": string, "fillRect": (. int, int, int, int) => unit}
 type canvasEl = {"getContext": (. string) => canvasContext}
-let bump = v => v +. (31.25 -. Js.Math.pow_float(~base=v -. 62.5, ~exp=2.) /. 125.)
 
-let clamp = (v, min, max) => v->Js.Math.max_int(min)->Js.Math.min_int(max)
+let xToSaturation = (~max=125., v) =>
+  v +. (max /. 4. -. Js.Math.pow_float(~base=v -. max /. 2., ~exp=2.) /. max)
+
+let yToLightness = (~max=125., v) => (v +. v->xToSaturation(~max)) /. 2.
+
+let clamp = (v, min, max) => v->Js.Math.max_float(min)->Js.Math.min_float(max)
 
 module ShadeCanvas = {
   @react.component
@@ -13,7 +17,7 @@ module ShadeCanvas = {
         "getContext": (
           . string,
         ) => {..
-          "fillRect": (. float, int, int, int) => unit,
+          "fillRect": (. int, int, int, int) => unit,
           "fillStyle#=": Js_OO.Meth.arity1<string => unit>,
         },
       }>,
@@ -26,14 +30,13 @@ module ShadeCanvas = {
       ->Belt.Option.forEach(c => {
         let ctx = c["getContext"](. "2d")
         for x in 0 to 125 {
-          let x1 = x->float_of_int
-          let x2 = x1->bump
+          let x1 = x->float_of_int->xToSaturation
           for y in 0 to 125 {
-            let y1 = y->float_of_int
-            let y2 = (y1 +. y1->bump) /. 2.
+            let y1 = y->float_of_int->yToLightness
+
             ctx["fillStyle"] =
-              Lab.hslToP3(#hsl(hue, x2 /. 125., (125. -. y2) /. 125.))->Lab.p3ToString
-            ctx["fillRect"](. x1 *. 4., y * 4, 4, 4)
+              Lab.hslToP3(#hsl(hue, x1 /. 125., (125. -. y1) /. 125.))->Lab.p3ToString
+            ctx["fillRect"](. x * 4, y * 4, 4, 4)
           }
         }
       })
@@ -57,7 +60,7 @@ module Styles = {
       borderStyle(#solid),
       borderWidth(#px(1)),
       borderRadius(#px(10)),
-      backdropFilter([#brightness(#percent(150.))]),
+      // backdropFilter([#brightness(#percent(150.))]),
       boxShadow(Shadow.box(~y=px(0), ~blur=px(4), rgba(0, 0, 0, #num(0.5)))),
       before([
         contentRule(#text(" ")),
@@ -99,52 +102,51 @@ module Wrapper = %styled.div(`
 @react.component
 let make = (
   ~hue,
-  ~saturation: int,
-  ~lightness: int,
+  ~saturation: float,
+  ~lightness: float,
   ~setSaturation,
-  ~setLightness: (int => int) => unit,
+  ~setLightness: (float => float) => unit,
   (),
 ) => {
   let canvasRef = React.useRef(Js.Nullable.null)
   let (mouseDown, setMouseDown) = React.useState(() => false)
-  let ((x, y), setXY) = React.useState(_ => (saturation * 5, lightness * 5))
-  let setValue = (s, l) => {
-    setSaturation(_ => s)
-    setLightness(_ => l)
-    setXY(_ => (s, l))
+  let ((x, y), setXY) = React.useState(_ => (saturation *. 500., lightness *. 500.))
+  let setValue = (x, y) => {
+    setSaturation(_ => x->xToSaturation(~max=500.) /. 500.)
+    setLightness(_ => 1. -. y->yToLightness(~max=500.) /. 500.)
+    setXY(_ => (x, y))
   }
+
   let (canvasX, canvasY) =
     canvasRef.current
     ->Js.Nullable.toOption
     ->Belt.Option.map(c => (c["getBoundingClientRect"](.)["x"], c["getBoundingClientRect"](.)["y"]))
-    ->Belt.Option.getWithDefault((0, 0))
+    ->Belt.Option.getWithDefault((0., 0.))
+
+  let handleMouseEvent = e => {
+    let mouseX = e->ReactEvent.Mouse.clientX->float_of_int
+    let mouseY = e->ReactEvent.Mouse.clientY->float_of_int
+    setValue((mouseX -. canvasX)->clamp(0., 500.), (mouseY -. canvasY)->clamp(0., 500.))
+    setMouseDown(_ => true)
+
+    ()
+  }
   <>
     <Wrapper
       onMouseMove={e => {
         if mouseDown {
-          let mouseX = e->ReactEvent.Mouse.clientX
-          let mouseY = e->ReactEvent.Mouse.clientY
-          setValue((mouseX - canvasX)->clamp(0, 500) / 5, (mouseY - canvasY)->clamp(0, 500) / 5)
-          e->ReactEvent.Mouse.preventDefault
+          handleMouseEvent(e)
         }
-        ()
       }}
+      onMouseDown={handleMouseEvent}
       onMouseUp={e => {
         e->ReactEvent.Mouse.preventDefault
         setMouseDown(_v => false)
         ()
-      }}
-      onMouseDown={e => {
-        let mouseX = e->ReactEvent.Mouse.clientX
-        let mouseY = e->ReactEvent.Mouse.clientY
-        setValue((mouseX - canvasX)->clamp(0, 500) / 5, (mouseY - canvasY)->clamp(0, 500) / 5)
-        setMouseDown(_ => true)
-
-        ()
       }}>
       {mouseDown ? <div className={Styles.mouseBg} /> : React.null}
       <ShadeCanvas domRef={canvasRef} hue />
-      <div className={Styles.point(x * 5, y * 5)} />
+      <div className={Styles.point(x->int_of_float, y->int_of_float)} />
     </Wrapper>
   </>
 }

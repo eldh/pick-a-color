@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { make as Picker } from "./Picker.bs";
+import { make as ColorPicker } from "./ColorPicker.bs";
 
 function App() {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -20,7 +20,7 @@ function App() {
   }, [hue]);
   return (
     <div style={{ margin: "40px" }}>
-      <Picker />
+      <ColorPicker />
     </div>
   );
 }
