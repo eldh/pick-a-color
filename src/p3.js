@@ -13,5 +13,3 @@ const v = [
 ];
 
 const res = v.map((c) => c.map((v) => v / 255).join(" "));
-
-console.log("res", res);

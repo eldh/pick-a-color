@@ -1,6 +1,7 @@
+import { userSelect } from "bs-css/src/Css_Js_Core.bs";
 import React from "react";
-import ReactDOM from "react-dom";
 import { make as ColorPicker } from "./ColorPicker.bs";
+import { make as LabColorPicker } from "./LabColorPicker.bs";
 
 function App() {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -19,7 +20,8 @@ function App() {
     }
   }, [hue]);
   return (
-    <div style={{ margin: "40px" }}>
+    <div style={{ margin: "40px", display: "flex" }}>
+      <LabColorPicker />
       <ColorPicker />
     </div>
   );

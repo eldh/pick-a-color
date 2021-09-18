@@ -3,23 +3,25 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 
+console.log(ReactDOM, React);
+
 // @ts-ignore experimental
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/sw.js?v=2").then(
-      function (registration) {
-        // Registration was successful
-        console.log(
-          "ServiceWorker registration successful with scope: ",
-          registration.scope
-        );
-      },
-      function (err) {
-        // registration failed :(
-        console.log("ServiceWorker registration failed: ", err);
-      }
-    );
-  });
-}
+// if ("serviceWorker" in navigator) {
+//   window.addEventListener("load", function () {
+//     navigator.serviceWorker.register("/sw.js?v=2").then(
+//       function (registration) {
+//         // Registration was successful
+//         console.log(
+//           "ServiceWorker registration successful with scope: ",
+//           registration.scope
+//         );
+//       },
+//       function (err) {
+//         // registration failed :(
+//         console.log("ServiceWorker registration failed: ", err);
+//       }
+//     );
+//   });
+// }

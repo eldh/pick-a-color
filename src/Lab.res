@@ -22,8 +22,6 @@ let toPrecision = %raw(`
   }
 `)
 
-Js.log(toPrecision(1.12312312, 2))
-
 let toFixed = (i0, f) => {
   let i = i0 |> float_of_int
   if f < 1. {
@@ -171,9 +169,14 @@ let toRGB = x =>
     |> (((r, g, b)) => #rgba(r, g, b, alpha))
   }
 
+let fromLCH = x =>
+  switch x {
+  | #lch(l, c, h, alpha: float) => #lab(l, c *. Js.Math.cos(h), c *. Js.Math.sin(h), alpha)
+  }
+
 let fromP3 = x =>
   switch x {
-  | #p3(r, g, b, alpha) =>
+  | #p3(r, g, b, alpha: float) =>
     (r, g, b)
     |> mapTriple(rgbLinear)
     |> linearP3ToXyz
@@ -199,7 +202,9 @@ let toP3 = x =>
 let toLab = x =>
   switch x {
   | #lab(_, _, _, _) as lab => lab
+  | #lch(_, _, _, _) as lch => fromLCH(lch)
   | #rgb(_, _, _) as rgb => fromRGB(rgb)
+  | #p3(_, _, _, _) as p3 => fromP3(p3)
   | #rgba(_, _, _, _) as rgba => fromRGB(rgba)
   | #transparent => #lab(0., 0., 0., 0.)
   }
@@ -225,6 +230,20 @@ let p3ToString = p3 => {
   }
 }
 
+let rgbToString = rgba => {
+  switch rgba {
+  | #rgba(r, g, b, a) =>
+    "rgba(" ++
+    r->Belt.Int.toString ++
+    ", " ++
+    g->Belt.Int.toString ++
+    ", " ++
+    b->Belt.Int.toString ++
+    ", " ++
+    a->Belt.Float.toString ++ ")"
+  }
+}
+
 let lightness = (v, x) =>
   switch x {
   | #lab(_l, a, b, alpha) => #lab(clamp(0., 100., v), a, b, alpha)
@@ -237,6 +256,16 @@ let lighten = (factor, x) =>
 
 let darken = (factor, c) => c |> lighten(factor * -1)
 
+let rotate = (~deg=Js.Math._PI, color) =>
+  switch color {
+  | #lab(l, a, b, alpha) =>
+    #lab(
+      l,
+      a *. Js.Math.cos(deg) -. b *. Js.Math.sin(deg),
+      a *. Js.Math.sin(deg) +. b *. Js.Math.cos(deg),
+      alpha,
+    )
+  }
 let getTuple = x =>
   switch x {
   | #lab(l, a, b, al) => (l, a, b, al)

@@ -1,5 +1,7 @@
 module Styles = {
   open CssJs
+  let flex = style(. [display(#flex), flexDirection(#row), width(px(500))])
+
   let test = bg =>
     style(. [
       position(#relative),
@@ -15,10 +17,11 @@ module Styles = {
 let make = () => {
   let (_isPending, startTransition) = ReactExperimental.useTransition({timeoutMs: 2000})
   let (lightness, setLightness) = React.useState(() => 1.)
-  let (saturation, setSaturation) = React.useState(() => 1.)
+  let (chroma, setChroma) = React.useState(() => 1.)
   let (hue, setHue) = React.useState(() => 0.)
   let (fastHue, setFastHue) = React.useState(() => 0.)
-  let color = Lab.hslToP3(#hsl(hue, saturation, lightness))
+  let color = #lch(lightness, chroma, hue, 1.)
+  Js.log(color)
   let handleSetHue = React.useCallback1(v => {
     setFastHue(_ => v)
     startTransition(() => setHue(_ => v))
@@ -26,8 +29,8 @@ let make = () => {
 
   <div>
     <React.Suspense fallback=React.null>
-      <ColorBox color /> <ShadePicker hue saturation lightness setSaturation setLightness />
+      <ColorBox color /> <LabShadePicker hue chroma lightness setChroma setLightness />
     </React.Suspense>
-    <HueSlider value=fastHue setValue={handleSetHue} />
+    <LabHueSlider value=fastHue setValue={handleSetHue} />
   </div>
 }
