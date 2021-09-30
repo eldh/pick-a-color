@@ -186,8 +186,19 @@ let fromP3 = x =>
     |> (((l, a, b)) => #lab(l, a, b, alpha))
   }
 
-let toP3 = x =>
+let toLab = x =>
   switch x {
+  | #lab(_, _, _, _) as lab => lab
+  | #lch(_, _, _, _) as lch => fromLCH(lch)
+  | #rgb(_, _, _) as rgb => fromRGB(rgb)
+  | #p3(_, _, _, _) as p3 => fromP3(p3)
+  | #rgba(_, _, _, _) as rgba => fromRGB(rgba)
+  | #transparent => #lab(0., 0., 0., 0.)
+  }
+
+let rec toP3 = x =>
+  switch x {
+  | #lch(_, _, _, _) as lch => lch->toLab->toP3
   | #lab(l, a, b, alpha) =>
     (l, a, b)
     |> labToXyz
@@ -197,16 +208,6 @@ let toP3 = x =>
     |> mapTriple(p3Clamp)
     |> mapTriple(toFixed(3))
     |> (((r, g, b)) => #p3(r, g, b, alpha))
-  }
-
-let toLab = x =>
-  switch x {
-  | #lab(_, _, _, _) as lab => lab
-  | #lch(_, _, _, _) as lch => fromLCH(lch)
-  | #rgb(_, _, _) as rgb => fromRGB(rgb)
-  | #p3(_, _, _, _) as p3 => fromP3(p3)
-  | #rgba(_, _, _, _) as rgba => fromRGB(rgba)
-  | #transparent => #lab(0., 0., 0., 0.)
   }
 
 let toCss = x =>
@@ -252,12 +253,15 @@ let lightness = (v, x) =>
 let lighten = (factor, x) =>
   switch x {
   | #lab(l, a, b, alpha) => #lab(clamp(0., 100., l +. (factor |> float_of_int)), a, b, alpha)
+  | #lch(l, c, h, alpha) => #lch(clamp(0., 100., l +. (factor |> float_of_int)), c, h, alpha)
   }
 
 let darken = (factor, c) => c |> lighten(factor * -1)
 
 let rotate = (~deg=Js.Math._PI, color) =>
   switch color {
+  | #lch(l, c, h, alpha) =>
+    #lch(l, c, h +. deg > 2. *. Js.Math._PI ? h +. deg -. 2. *. Js.Math._PI : h +. deg, alpha)
   | #lab(l, a, b, alpha) =>
     #lab(
       l,
@@ -288,8 +292,15 @@ let luminance_x = x => {
 
 let luminance = x =>
   switch x {
-  | #lab(l: float, _a, _b, _alpha) => l
+  | #lab(l: float, _, _, _)
+  | #lch(l: float, _, _, _) => l
   }
+
+let desaturate = (~amount=0.5, color) => {
+  switch color {
+  | #lch(l, c, h, alpha) => #lch(l, c *. amount, h, alpha)
+  }
+}
 
 let highlight = (~baseColor, factor) => {
   let baseL = luminance(baseColor)
@@ -325,13 +336,14 @@ let getContrastColor = (
   lab,
 ) => {
   let contrastFn = contrast(lab)
-
   let baseColor = darkColor |> contrastFn > (lightColor |> contrastFn) ? darkColor : lightColor
   switch tint {
   | None => baseColor
   | Some(#lab(_l, a, b, alpha)) => #lab(luminance(baseColor), a, b, alpha)
+  | Some(#lch(_l, c, h, alpha)) => #lch(luminance(baseColor), c, h, alpha)->toLab
   }
 }
+
 let hslToP3 = hsl => {
   switch hsl {
   | #hsl(h, s, l) =>

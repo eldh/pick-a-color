@@ -1,11 +1,17 @@
 type canvasContext = {@set "fillStyle": string, "fillRect": (. int, int, int, int) => unit}
 type canvasEl = {"getContext": (. string) => canvasContext}
 
-let xToSaturation = (~max=125., v) =>
+let size = 500.
+let points = 125.
+let pointsInt = points->int_of_float
+let pointSize = size /. points
+let pointSizeInt = pointSize->int_of_float
+
+let xToChroma = (~max=points, v) =>
   v +. (max /. 4. -. Js.Math.pow_float(~base=v -. max /. 2., ~exp=2.) /. max)
 
-let yToLightness = (~max=125., v) => (v +. v->xToSaturation(~max)) /. 2.
-
+let yToLightness = (~max=points, v) => (v +. v->xToChroma(~max)) /. 2.
+// 100. -. y->float_of_int *. 100. /. points,
 let clamp = (v, min, max) => v->Js.Math.max_float(min)->Js.Math.min_float(max)
 
 module ShadeCanvas = {
@@ -29,14 +35,19 @@ module ShadeCanvas = {
       ->Js.Nullable.toOption
       ->Belt.Option.forEach(c => {
         let ctx = c["getContext"](. "2d")
-        for x in 0 to 125 {
-          let x1 = x->float_of_int->xToSaturation
-          for y in 0 to 125 {
-            let y1 = y->float_of_int->yToLightness
-
+        for x in 0 to pointsInt {
+          for y in 0 to pointsInt {
             ctx["fillStyle"] =
-              Lab.hslToP3(#hsl(hue, x1 /. 125., (125. -. y1) /. 125.))->Lab.p3ToString
-            ctx["fillRect"](. x * 4, y * 4, 4, 4)
+              #lch(
+                100. *. (1. -. y->float_of_int->yToLightness /. points),
+                x->float_of_int->xToChroma *. 132. /. points,
+                hue,
+                1.,
+              )
+              ->Lab.fromLCH
+              ->Lab.toP3
+              ->Lab.p3ToString
+            ctx["fillRect"](. x * pointSizeInt, y * pointSizeInt, pointSizeInt, pointSizeInt)
           }
         }
       })
@@ -102,21 +113,21 @@ module Wrapper = %styled.div(`
 @react.component
 let make = (
   ~hue,
-  ~saturation: float,
+  ~chroma: float,
   ~lightness: float,
-  ~setSaturation,
+  ~setChroma,
   ~setLightness: (float => float) => unit,
   (),
 ) => {
   let canvasRef = React.useRef(Js.Nullable.null)
   let (mouseDown, setMouseDown) = React.useState(() => false)
   let (_isPending, startTransition) = ReactExperimental.useTransition({timeoutMs: 2000})
-  let ((x, y), setXY) = React.useState(_ => (saturation *. 500., lightness *. 500.))
+  let ((x, y), setXY) = React.useState(_ => (chroma *. 500., lightness *. 500.))
   let setValue = (x, y) => {
     setXY(_ => (x, y))
     startTransition(() => {
-      setSaturation(_ => x->xToSaturation(~max=500.) /. 500.)
-      setLightness(_ => 1. -. y->yToLightness(~max=500.) /. 500.)
+      setChroma(_ => 132. *. x->xToChroma(~max=500.) /. 500.)
+      setLightness(_ => 100. -. y->yToLightness(~max=500.) /. 5.)
     })
   }
 
@@ -127,6 +138,7 @@ let make = (
     ->Belt.Option.getWithDefault((0., 0.))
 
   let handleMouseEvent = e => {
+    e->ReactEvent.Mouse.preventDefault
     let mouseX = e->ReactEvent.Mouse.clientX->float_of_int
     let mouseY = e->ReactEvent.Mouse.clientY->float_of_int
     setValue((mouseX -. canvasX)->clamp(0., 500.), (mouseY -. canvasY)->clamp(0., 500.))

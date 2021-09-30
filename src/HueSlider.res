@@ -18,6 +18,7 @@ module Styles = {
       borderRadius(#px(2)),
       backdropFilter([#brightness(#percent(150.))]),
       boxShadow(Shadow.box(~y=px(1), ~blur=px(2), rgba(0, 0, 0, #num(0.5)))),
+      zIndex(10),
       before([
         contentRule(#text(" ")),
         position(#absolute),
@@ -64,9 +65,10 @@ let make = (~setValue, ~value: float) => {
     ->Js.Nullable.toOption
     ->Belt.Option.forEach(c => {
       let ctx = c["getContext"](. "2d")
-      for hue in 0 to 500 {
-        ctx["fillStyle"] = Lab.hslToP3(#hsl(hue->float_of_int /. 500., 1., 0.5))->Lab.p3ToString
-        ctx["fillRect"](. hue, 0, 1, 40)
+      for i in 0 to 500 {
+        let deg = i->float_of_int *. 2. *. Js.Math._PI /. 500.
+        ctx["fillStyle"] = #lch(75., 132., deg, 1.)->Lab.fromLCH->Lab.toP3->Lab.p3ToString
+        ctx["fillRect"](. i, 0, 1, 40)
       }
     })
     None
@@ -76,12 +78,16 @@ let make = (~setValue, ~value: float) => {
     ->Js.Nullable.toOption
     ->Belt.Option.map(c => c["getBoundingClientRect"](.)["x"])
     ->Belt.Option.getWithDefault(0)
+
+  let setValueFromEvent = e => {
+    let mouseX = e->ReactEvent.Mouse.clientX
+    setValue((mouseX - canvasLeftEdge)->clamp(0, 500)->float_of_int *. 2. *. Js.Math._PI /. 500.)
+  }
   <>
     <Wrapper
       onMouseMove={e => {
         if mouseDown {
-          let mouseX = e->ReactEvent.Mouse.clientX
-          setValue((mouseX - canvasLeftEdge)->clamp(0, 500)->float_of_int /. 500.)
+          setValueFromEvent(e)
           e->ReactEvent.Mouse.preventDefault
         }
         ()
@@ -92,14 +98,14 @@ let make = (~setValue, ~value: float) => {
         ()
       }}
       onMouseDown={e => {
-        let mouseX = e->ReactEvent.Mouse.clientX
-        setValue((mouseX - canvasLeftEdge)->clamp(0, 500)->float_of_int /. 500.)
+        setValueFromEvent(e)
+        e->ReactEvent.Mouse.preventDefault
         setMouseDown(_ => true)
         ()
       }}>
       {mouseDown ? <div className={Styles.mouseBg} /> : React.null}
       <canvas ref={ReactDOM.Ref.domRef(canvasRef->Obj.magic)} width="500" height="40" />
-      <div className={Styles.point((value *. 500.)->Belt.Float.toInt)} />
+      <div className={Styles.point((value *. 500. /. (2. *. Js.Math._PI))->Belt.Float.toInt)} />
     </Wrapper>
   </>
 }
