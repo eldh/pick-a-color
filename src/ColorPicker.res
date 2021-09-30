@@ -13,17 +13,15 @@ module Styles = {
 @react.component
 let make = () => {
   let (_isPending, startTransition) = ReactExperimental.useTransition({timeoutMs: 2000})
-  let (lightness, setLightness) = React.useState(() => 1.)
-  let (chroma, setChroma) = React.useState(() => 1.)
-  let (hue, setHue) = React.useState(() => 0.)
-  let (fastHue, setFastHue) = React.useState(() => 0.)
+  let (lightness, setLightness) = React.useState(() => 50.)
+  let (chroma, setChroma) = React.useState(() => 66.)
+  let (hue, setHue) = React.useState(() => Js.Math._PI)
+  let (fastHue, setFastHue) = React.useState(() => Js.Math._PI)
   let color = #lch(lightness, chroma, hue, 1.)
-
   let handleSetHue = React.useCallback1(v => {
     setFastHue(_ => v)
     startTransition(() => setHue(_ => v))
   }, [startTransition])
-
   <div className={Styles.wrapper}>
     <React.Suspense fallback=React.null>
       <ColorBox color /> <ShadePicker hue chroma lightness setChroma setLightness />

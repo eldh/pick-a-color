@@ -26,9 +26,10 @@ let make = (~color) => {
   <>
     {rotations
     ->Belt.Array.map(r => {
-      <div className=Styles.flex>
+      <div className=Styles.flex key={r->Lab.toP3->Lab.p3ToString}>
         {shades
         ->Belt.Array.map(n => {
+          Js.log(labColor)
           <div
             key={n->Js.Int.toString}
             className={Styles.bg(

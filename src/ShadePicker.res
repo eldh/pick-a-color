@@ -122,7 +122,7 @@ let make = (
   let canvasRef = React.useRef(Js.Nullable.null)
   let (mouseDown, setMouseDown) = React.useState(() => false)
   let (_isPending, startTransition) = ReactExperimental.useTransition({timeoutMs: 2000})
-  let ((x, y), setXY) = React.useState(_ => (chroma *. 500., lightness *. 500.))
+  let ((x, y), setXY) = React.useState(_ => (chroma *. 500. /. 132., lightness *. 5.))
   let setValue = (x, y) => {
     setXY(_ => (x, y))
     startTransition(() => {
@@ -131,13 +131,15 @@ let make = (
     })
   }
 
-  let (canvasX, canvasY) =
-    canvasRef.current
-    ->Js.Nullable.toOption
-    ->Belt.Option.map(c => (c["getBoundingClientRect"](.)["x"], c["getBoundingClientRect"](.)["y"]))
-    ->Belt.Option.getWithDefault((0., 0.))
-
   let handleMouseEvent = e => {
+    let (canvasX, canvasY) =
+      canvasRef.current
+      ->Js.Nullable.toOption
+      ->Belt.Option.map(c => (
+        c["getBoundingClientRect"](.)["x"],
+        c["getBoundingClientRect"](.)["y"],
+      ))
+      ->Belt.Option.getWithDefault((0., 0.))
     e->ReactEvent.Mouse.preventDefault
     let mouseX = e->ReactEvent.Mouse.clientX->float_of_int
     let mouseY = e->ReactEvent.Mouse.clientY->float_of_int
