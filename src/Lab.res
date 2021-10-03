@@ -173,6 +173,16 @@ let fromLCH = x =>
   switch x {
   | #lch(l, c, h, alpha: float) => #lab(l, c *. Js.Math.cos(h), c *. Js.Math.sin(h), alpha)
   }
+let toLCH = x =>
+  switch x {
+  | #lab(l, a, b, alpha: float) =>
+    #lch(
+      l,
+      Js.Math.sqrt(a *. a +. b *. b),
+      Js.Math.atan(b /. a) >= 0. ? Js.Math.atan(b /. a) : Js.Math.atan(b /. a) +. Js.Math._PI *. 2.,
+      alpha,
+    )
+  }
 
 let fromP3 = x =>
   switch x {
@@ -217,6 +227,16 @@ let toCss = x =>
     | 0. => #transparent
     | _ => toRGB(lab)
     }
+  }
+
+let getKey = x =>
+  switch x {
+  | #lch(l, c, h, a) =>
+    "lch" ++
+    l->Belt.Float.toString ++
+    c->Belt.Float.toString ++
+    h->Belt.Float.toString ++
+    a->Belt.Float.toString
   }
 
 let p3ToString = p3 => {
@@ -296,8 +316,9 @@ let luminance = x =>
   | #lch(l: float, _, _, _) => l
   }
 
-let desaturate = (~amount=0.5, color) => {
+let rec desaturate = (~amount=0.5, color) => {
   switch color {
+  | #lab(_, _, _, _) as lab => lab->toLCH->desaturate
   | #lch(l, c, h, alpha) => #lch(l, c *. amount, h, alpha)
   }
 }

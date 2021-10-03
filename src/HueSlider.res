@@ -73,13 +73,13 @@ let make = (~setValue, ~value: float) => {
     })
     None
   }, [])
-  let canvasLeftEdge =
-    canvasRef.current
-    ->Js.Nullable.toOption
-    ->Belt.Option.map(c => c["getBoundingClientRect"](.)["x"])
-    ->Belt.Option.getWithDefault(0)
 
   let setValueFromEvent = e => {
+    let canvasLeftEdge =
+      canvasRef.current
+      ->Js.Nullable.toOption
+      ->Belt.Option.map(c => c["getBoundingClientRect"](.)["x"])
+      ->Belt.Option.getWithDefault(0)
     let mouseX = e->ReactEvent.Mouse.clientX
     setValue((mouseX - canvasLeftEdge)->clamp(0, 500)->float_of_int *. 2. *. Js.Math._PI /. 500.)
   }

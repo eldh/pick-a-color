@@ -71,7 +71,6 @@ module Styles = {
       borderStyle(#solid),
       borderWidth(#px(1)),
       borderRadius(#px(10)),
-      // backdropFilter([#brightness(#percent(150.))]),
       boxShadow(Shadow.box(~y=px(0), ~blur=px(4), rgba(0, 0, 0, #num(0.5)))),
       before([
         contentRule(#text(" ")),
@@ -122,7 +121,8 @@ let make = (
   let canvasRef = React.useRef(Js.Nullable.null)
   let (mouseDown, setMouseDown) = React.useState(() => false)
   let (_isPending, startTransition) = ReactExperimental.useTransition({timeoutMs: 2000})
-  let ((x, y), setXY) = React.useState(_ => (chroma *. 500. /. 132., lightness *. 5.))
+  Js.log3("shade", chroma, lightness)
+  let ((x, y), setXY) = React.useState(_ => (chroma *. 500. /. 132., (100. -. lightness) *. 5.))
   let setValue = (x, y) => {
     setXY(_ => (x, y))
     startTransition(() => {
@@ -148,22 +148,20 @@ let make = (
 
     ()
   }
-  <>
-    <Wrapper
-      onMouseMove={e => {
-        if mouseDown {
-          handleMouseEvent(e)
-        }
-      }}
-      onMouseDown={handleMouseEvent}
-      onMouseUp={e => {
-        e->ReactEvent.Mouse.preventDefault
-        setMouseDown(_v => false)
-        ()
-      }}>
-      {mouseDown ? <div className={Styles.mouseBg} /> : React.null}
-      <ShadeCanvas domRef={canvasRef} hue />
-      <div className={Styles.point(x->int_of_float, y->int_of_float)} />
-    </Wrapper>
-  </>
+  <Wrapper
+    onMouseMove={e => {
+      if mouseDown {
+        handleMouseEvent(e)
+      }
+    }}
+    onMouseDown={handleMouseEvent}
+    onMouseUp={e => {
+      e->ReactEvent.Mouse.preventDefault
+      setMouseDown(_v => false)
+      ()
+    }}>
+    {mouseDown ? <div className={Styles.mouseBg} /> : React.null}
+    <ShadeCanvas domRef={canvasRef} hue />
+    <div className={Styles.point(x->int_of_float, y->int_of_float)} />
+  </Wrapper>
 }
