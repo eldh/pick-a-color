@@ -8,6 +8,7 @@ module Styles = {
     maxWidth(px(500)),
     alignItems(#center),
     justifyContent(#center),
+    boxShadow(Shadow.box(~y=px(1), ~blur=px(30), rgba(0, 0, 0, #num(0.4)))),
   ])
 
   let button = (~textColor, ~highlightColor, color) =>
@@ -36,7 +37,7 @@ let make = (~onDone, ~initialColor=None) => {
     switch c {
     | #lch(l, c, h, _a) => (l, c, h)
     }
-  | None => (50., 66., Js.Math._PI)
+  | None => (80., 100., Js.Math._PI)
   }
 
   let (_isPending, startTransition) = ReactExperimental.useTransition({timeoutMs: 2000})
@@ -52,7 +53,6 @@ let make = (~onDone, ~initialColor=None) => {
   <div className={Styles.wrapper}>
     <HueSlider value=fastHue setValue={handleSetHue} />
     <React.Suspense fallback=React.null>
-      // <ColorBox color />
       <ShadePicker hue chroma lightness setChroma setLightness />
       <button
         className={Styles.button(

@@ -14,7 +14,7 @@ function App() {
         minHeight: "100vh"
       }}
     >
-      {goodBrowser ? <ReApp /> : <Fallback />}
+      {goodBrowser || true ? <ReApp /> : <Fallback />}
     </div>
   );
 }

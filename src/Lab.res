@@ -9,8 +9,10 @@ exception InvalidValue(string)
 type t = [#lab(float, float, float, float)]
 
 type a11yLevel =
+  | A
   | AA
   | AAA
+  | AAAA
 
 type a11yTextSize =
   | Normal
@@ -175,6 +177,7 @@ let fromLCH = x =>
   }
 let toLCH = x =>
   switch x {
+  | #lch(_, _, _, _) as lch => lch
   | #lab(l, a, b, alpha: float) =>
     #lch(
       l,
@@ -220,13 +223,34 @@ let rec toP3 = x =>
     |> (((r, g, b)) => #p3(r, g, b, alpha))
   }
 
-let toCss = x =>
+let rec toCss = x =>
   switch x {
   | #lab(_l, _a, _b, alpha) as lab =>
     switch alpha {
     | 0. => #transparent
     | _ => toRGB(lab)
     }
+  | #lch(_, _, _, _) as lch => lch->toCss
+  }
+type colorFormat = P3 | LCH | LAB
+let f = num => (num *. 100.)->Js.Math.round->(a => a /. 100.)->Js.Float.toString
+
+let rec toString = (color, format) =>
+  switch (color, format) {
+  | (#lch(l, c, h, _), LCH) => `lch(${l->f} ${c->f} ${h->f})`
+  | (#lch(_, _, _, _) as lch, _) => lch->fromLCH->toString(_, format)
+  | (#lab(_, _, _, _) as lab, P3) =>
+    lab
+    ->toP3
+    ->(
+      p3c =>
+        switch p3c {
+        | #p3(r, g, b, _a) => `p3(${r->f} ${g->f} ${b->f})`
+        }
+    )
+
+  | (#lab(_, _, _, _) as lab, LCH) => lab->toLCH->toString(_, format)
+  | (#lab(l, a, b, _), LAB) => `lab(${l->f} ${a->f} ${b->f})`
   }
 
 let getKey = x =>
@@ -333,14 +357,20 @@ let highlight = (~baseColor, factor) => {
     }
 }
 
-let contrast = (lab1, lab2) => {
-  let lum1 = lab1 |> luminance
-  let lum2 = lab2 |> luminance
-  21. *. (0.01 *. abs_float(lum1 -. lum2))
+let contrast = (color1, color2) => {
+  let lum1 = luminance(color1)
+  let lum2 = luminance(color2)
+  let l1 = Js.Math.max_float(lum1, lum2)
+  let l2 = Js.Math.min_float(lum1, lum2)
+  (l1 +. 0.55) /. (l2 +. 0.55)
 }
 
-let getContrastLimit = x =>
+let getContrastFactor = x =>
   switch x {
+  | (AAAA, Large) => 15.
+  | (AAAA, Normal) => 21.
+  | (A, Large) => 2.25
+  | (A, Normal) => 2.75
   | (AA, Large) => 3.
   | (AA, Normal) => 4.5
   | (AAA, Large) => 4.5
@@ -348,7 +378,45 @@ let getContrastLimit = x =>
   }
 
 let isContrastOk = (~level=AA, ~size=Normal, lab1, lab2) =>
-  contrast(lab1, lab2) > getContrastLimit((level, size))
+  contrast(lab1, lab2) > getContrastFactor((level, size))
+
+let getTextColor = (~level, ~size, initialColor) => {
+  let lch = initialColor->toLCH
+  let (l, c, h, a) = switch lch {
+  | #lch(l, c, h, a) => (l, c, h, a)
+  }
+  let operator = l > 50. ? (a, b) => a -. b : (a, b) => a +. b
+
+  let naiveLDiff = 4.1292 *. getContrastFactor((level, size)) +. 19.8566
+  let naiveL = operator(l, naiveLDiff)
+  let retVal =
+    naiveL > 100. || naiveL < 0.
+      ? l > 50. ? #lch(0., 0., h, a) : #lch(100., 0., h, a)
+      : #lch(naiveL, naiveLDiff > 50. ? c *. 0.4 : c, h, a)
+
+  // let increaseContrast = color => {
+  //   switch color {
+  //   | #lch(l, c, h, a) =>
+  //     if c < 10. {
+  //       l > 50. ? #lch(0., 0., h, a) : #lch(100., 0., h, a)
+  //     } else if l === 0. || l === 100. {
+  //       #lch(l, c *. 0.8, h, a)
+  //     } else {
+  //       #lch(clamp(0., 100., operator(l, step)), c, h, a)
+  //     }
+  //   }
+  // }
+  // let retVal = ref(increaseContrast(lch))
+  // let iterations = ref(0)
+
+  // while !isContrastOk(~level, ~size, initialColor, retVal.contents) && iterations.contents < 100 {
+  //   retVal := increaseContrast(retVal.contents)
+  //   iterations := iterations.contents + 1
+  // }
+  Js.log3(lch->toString(LCH), retVal->toLCH->toString(LCH), contrast(lch, retVal))
+  retVal
+  // retVal.contents->toLCH
+}
 
 let getContrastColor = (
   ~lightColor=#lab(100., 0., 0., 1.),

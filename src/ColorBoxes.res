@@ -28,7 +28,7 @@ let make = (~colors, ~setColors) => {
           ->Belt.Array.map(color => {
             let key = color->Lab.getKey
             <ColorBox
-              color
+              color={color->Lab.toLCH}
               key
               onDelete={() =>
                 setColors(oldColors =>

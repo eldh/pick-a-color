@@ -23,7 +23,7 @@ module Styles = {
     overflow(#auto),
   ])
   let tabBarPickerWrapper = style(. [
-    position(#absolute),
+    position(#fixed),
     display(#flex),
     flexDirection(#column),
     width(#vw(100.)),
@@ -31,6 +31,7 @@ module Styles = {
     alignItems(#center),
     justifyContent(#center),
     unsafe("backdropFilter", "blur(25px)"),
+    zIndex(2),
   ])
   let tabBarPicker = style(. [
     position(#fixed),

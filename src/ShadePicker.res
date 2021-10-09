@@ -7,11 +7,13 @@ let pointsInt = points->int_of_float
 let pointSize = size /. points
 let pointSizeInt = pointSize->int_of_float
 
-let xToChroma = (~max=points, v) =>
-  v +. (max /. 4. -. Js.Math.pow_float(~base=v -. max /. 2., ~exp=2.) /. max)
+let xToChroma = (~max=points, x) => 2. *. x -. x *. x /. max
+let chromaToX = (~max=points, x) => max -. Js.Math.sqrt(max *. max -. max *. x)
 
-let yToLightness = (~max=points, v) => (v +. v->xToChroma(~max)) /. 2.
-// 100. -. y->float_of_int *. 100. /. points,
+// Just use linear for now
+let yToLightness = (~max as _=points, x) => x
+let lightnessToY = (~max as _=points, x) => x
+
 let clamp = (v, min, max) => v->Js.Math.max_float(min)->Js.Math.min_float(max)
 
 module ShadeCanvas = {
@@ -121,8 +123,12 @@ let make = (
   let canvasRef = React.useRef(Js.Nullable.null)
   let (mouseDown, setMouseDown) = React.useState(() => false)
   let (_isPending, startTransition) = ReactExperimental.useTransition({timeoutMs: 2000})
-  Js.log3("shade", chroma, lightness)
-  let ((x, y), setXY) = React.useState(_ => (chroma *. 500. /. 132., (100. -. lightness) *. 5.))
+  let ((x, y), setXY) = React.useState(_ => {
+    (
+      (chroma *. 500. /. 132.)->chromaToX(~max=500.),
+      (500. -. 5. *. lightness)->lightnessToY(~max=500.),
+    )
+  })
   let setValue = (x, y) => {
     setXY(_ => (x, y))
     startTransition(() => {
