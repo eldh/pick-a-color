@@ -6,20 +6,3 @@ import App from "./App";
 // @ts-ignore experimental
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
-// if ("serviceWorker" in navigator) {
-//   window.addEventListener("load", function () {
-//     navigator.serviceWorker.register("/sw.js?v=2").then(
-//       function (registration) {
-//         // Registration was successful
-//         console.log(
-//           "ServiceWorker registration successful with scope: ",
-//           registration.scope
-//         );
-//       },
-//       function (err) {
-//         // registration failed :(
-//         console.log("ServiceWorker registration failed: ", err);
-//       }
-//     );
-//   });
-// }

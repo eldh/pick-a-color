@@ -1,5 +1,4 @@
 ####{BSB GENERATED: NO EDIT
-FLG -ppx /Users/eldh/Code/vite-test/node_modules/@davesnx/styled-ppx/ppx
 FLG -ppx '/Users/eldh/Code/vite-test/node_modules/rescript/darwin/bsc.exe -as-ppx -bs-jsx 3'
 S /Users/eldh/Code/vite-test/node_modules/rescript/lib/ocaml
 B /Users/eldh/Code/vite-test/node_modules/rescript/lib/ocaml

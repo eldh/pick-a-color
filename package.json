@@ -1,15 +1,16 @@
 {
-  "name": "vitt",
+  "name": "pick-a-color",
   "version": "0.0.3",
   "private": true,
   "scripts": {
     "start": "vite",
-    "build": "vite build",
+    "start:re": "rescript build -w",
+    "build:re": "rescript build",
+    "build": "yarn build:re; vite build",
     "serve": "DEBUG=\"vite:sourcemap\" vite preview",
     "prettier": "prettier --write **/*.{json,ts,tsx,js,jsx}"
   },
   "dependencies": {
-    "@davesnx/styled-ppx": "^0.25.0",
     "@rescript/react": "^0.10.3",
     "bs-css": "^15.0.1",
     "bs-css-emotion": "^4.0.1",

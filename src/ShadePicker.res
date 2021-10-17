@@ -99,14 +99,8 @@ module Styles = {
     height(#vh(100.)),
     zIndex(1),
   ])
+  let wrapper = style(. [display(#flex), position(#relative), width(#px(500)), height(#px(40))])
 }
-
-module Wrapper = %styled.div(`
-  display: flex;
-  position:relative;
-  width: 500px;
-  height: 500px;
-`)
 
 @react.component
 let make = (
@@ -151,7 +145,8 @@ let make = (
 
     ()
   }
-  <Wrapper
+  <div
+    className=Styles.wrapper
     onMouseMove={e => {
       if mouseDown {
         handleMouseEvent(e)
@@ -166,5 +161,5 @@ let make = (
     {mouseDown ? <div className={Styles.mouseBg} /> : React.null}
     <ShadeCanvas domRef={canvasRef} hue />
     <div className={Styles.point(x->int_of_float, y->int_of_float)} />
-  </Wrapper>
+  </div>
 }

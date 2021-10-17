@@ -47,14 +47,8 @@ module Styles = {
     height(#vh(100.)),
     zIndex(1),
   ])
+  let wrapper = style(. [display(#flex), position(#relative), width(#px(500)), height(#px(40))])
 }
-
-module Wrapper = %styled.div(`
-  display: flex;
-  position:relative;
-  width: 500px;
-  height: 40px;
-`)
 
 @react.component
 let make = (~setValue, ~value: float) => {
@@ -84,7 +78,8 @@ let make = (~setValue, ~value: float) => {
     setValue((mouseX - canvasLeftEdge)->clamp(0, 500)->float_of_int *. 2. *. Js.Math._PI /. 500.)
   }
   <>
-    <Wrapper
+    <div
+      className={Styles.wrapper}
       onMouseMove={e => {
         if mouseDown {
           setValueFromEvent(e)
@@ -106,6 +101,6 @@ let make = (~setValue, ~value: float) => {
       {mouseDown ? <div className={Styles.mouseBg} /> : React.null}
       <canvas ref={ReactDOM.Ref.domRef(canvasRef->Obj.magic)} width="500" height="40" />
       <div className={Styles.point((value *. 500. /. (2. *. Js.Math._PI))->Belt.Float.toInt)} />
-    </Wrapper>
+    </div>
   </>
 }

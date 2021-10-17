@@ -249,11 +249,6 @@
     "@babel/helper-validator-identifier" "^7.14.9"
     to-fast-properties "^2.0.0"
 
-"@davesnx/styled-ppx@^0.25.0":
-  version "0.25.0"
-  resolved "https://registry.yarnpkg.com/@davesnx/styled-ppx/-/styled-ppx-0.25.0.tgz#24d0bc281f5d09ddf3713ae05665e069b9cf181b"
-  integrity sha512-KpnSIx1dj35Qcyj17NnEPUbCYCxchVqkbRrbYLWskIs9IA249Plof46Ipm1HFv1yXQSs3PkEgEMYzSRkvBsg+w==
-
 "@emotion/babel-plugin@^11.0.0":
   version "11.3.0"
   resolved "https://registry.yarnpkg.com/@emotion/babel-plugin/-/babel-plugin-11.3.0.tgz#3a16850ba04d8d9651f07f3fb674b3436a4fb9d7"
