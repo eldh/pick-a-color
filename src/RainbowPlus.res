@@ -8,8 +8,8 @@ module Styles = {
       flexShrink(0.),
       maxWidth(#percent(100.)),
       maxHeight(#percent(100.)),
-      transitionDuration(1500),
       borderRadius(#px(size)),
+      transitionDuration(1500),
       transitionTimingFunction(#cubicBezier(0.2, 0.68, 0., 1.31)),
       hover([
         transform(scale(1.05, 1.05)),

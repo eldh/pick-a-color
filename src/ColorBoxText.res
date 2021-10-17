@@ -31,32 +31,18 @@ module Styles = {
 type colorFormat = P3 | LCH | LAB
 let f = num => (num *. 100.)->Js.Math.round->(a => a /. 100.)->Js.Float.toString
 
-let rec toString = (color, format) =>
-  switch (color, format) {
-  | (#lch(l, c, h, _), LCH) => `lch(${l->f} ${c->f} ${h->f})`
-  | (#lch(_, _, _, _) as lch, _) => lch->Lab.fromLCH->toString(_, format)
-  | (#lab(_, _, _, _) as lab, P3) =>
-    lab
-    ->Lab.toP3
-    ->(
-      p3c =>
-        switch p3c {
-        | #p3(r, g, b, _a) => `p3(${r->f} ${g->f} ${b->f})`
-        }
-    )
-
-  | (#lab(_, _, _, _) as lab, LCH) => lab->Lab.toLCH->toString(_, format)
-  | (#lab(l, a, b, _), LAB) => `lab(${l->f} ${a->f} ${b->f})`
-  }
 let getLightness = x =>
   switch x {
   | #lch(l, _, _, _)
   | #lab(l, _, _, _) => l
   }
 
-let getFaintTextColor = color => Lab.getTextColor(~level=Lab.A, ~size=Lab.Normal, color)
+let getAATextColor = color => Lab.getTextColor(~level=Lab.AA, ~size=Lab.Large, color)
 
-let getNormalTextColor = color =>
+let getAAATextColor = color =>
+  Lab.getTextColor(~level=Lab.AAA, ~size=Lab.Large, color->Lab.desaturate(~amount=0.9))
+
+let getAAAATextColor = color =>
   Lab.getTextColor(~level=Lab.AAAA, ~size=Lab.Large, color->Lab.desaturate(~amount=0.8))
 
 // color->Lab.getContrastColor(~tint=color->Lab.desaturate(~amount=0.8))
@@ -64,29 +50,31 @@ let getNormalTextColor = color =>
 module Heading = {
   @react.component
   let make = (~color, ~children, ()) => {
-    <span className={Styles.header(~color=color->Lab.toP3->Lab.p3ToString)}> {children} </span>
+    <span className={Styles.header(~color=color->Lab.toString(P3))}> {children} </span>
   }
 }
 
 @react.component
 let make = (~color) => {
-  let textColor = color->getNormalTextColor
-  let faintTextColor = color->getFaintTextColor
-  <div className={Styles.wrapper(~color=textColor->Lab.toP3->Lab.p3ToString)}>
+  let aaaaTextColor = color->getAAAATextColor
+  let aaaTextColor = color->getAAATextColor
+  let aaTextColor = color->getAATextColor
+  <div className={Styles.wrapper(~color=aaaaTextColor->Lab.toString(P3))}>
     <div className={Styles.section}>
-      <Heading color=faintTextColor> {"Base"->React.string} </Heading>
-      <span> {color->toString(LCH)->React.string} </span>
-      <span> {color->toString(P3)->React.string} </span>
+      <Heading color=aaTextColor> {"Base"->React.string} </Heading>
+      <span> {color->Lab.toLCH->Lab.toString(LCH)->React.string} </span>
     </div>
     <div className={Styles.section}>
-      <Heading color=faintTextColor> {"Text"->React.string} </Heading>
-      <span> {textColor->toString(LCH)->React.string} </span>
-      <span> {textColor->toString(P3)->React.string} </span>
+      <Heading color=aaTextColor> {"AAAA Text"->React.string} </Heading>
+      <span> {aaaaTextColor->Lab.toString(LCH)->React.string} </span>
     </div>
     <div className={Styles.section}>
-      <Heading color=faintTextColor> {"Faint text"->React.string} </Heading>
-      <span> {faintTextColor->toString(LCH)->React.string} </span>
-      <span> {faintTextColor->toString(P3)->React.string} </span>
+      <Heading color=aaTextColor> {"AAA Text"->React.string} </Heading>
+      <span> {aaaTextColor->Lab.toString(LCH)->React.string} </span>
+    </div>
+    <div className={Styles.section}>
+      <Heading color=aaTextColor> {"AA text"->React.string} </Heading>
+      <span> {aaTextColor->Lab.toString(LCH)->React.string} </span>
     </div>
   </div>
 }

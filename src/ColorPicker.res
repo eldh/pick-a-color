@@ -1,20 +1,24 @@
 module Styles = {
   open CssJs
   let flex = style(. [display(#flex), flexDirection(#row), width(px(500))])
-  let wrapper = style(. [
-    display(#flex),
-    flexDirection(#column),
-    width(#vw(100.)),
-    maxWidth(px(500)),
-    alignItems(#center),
-    justifyContent(#center),
-    boxShadow(Shadow.box(~y=px(1), ~blur=px(30), rgba(0, 0, 0, #num(0.4)))),
-  ])
+  let wrapper = color =>
+    style(. [
+      display(#flex),
+      flexDirection(#column),
+      width(#vw(100.)),
+      maxWidth(px(500)),
+      alignItems(#center),
+      justifyContent(#center),
+      unsafe("backgroundColor", color),
+      boxShadow(Shadow.box(~y=px(1), ~blur=px(30), rgba(0, 0, 0, #num(0.4)))),
+    ])
 
   let button = (~textColor, ~highlightColor, color) =>
     style(. [
       unsafe("appearance", "none"),
       borderWidth(#px(0)),
+      borderStyle(#none),
+      margin(#px(0)),
       display(#flex),
       fontSize(#px(28)),
       fontWeight(#bold),
@@ -27,6 +31,7 @@ module Styles = {
       cursor(#pointer),
       width(#percent(100.)),
       hover([unsafe("backgroundColor", highlightColor)]),
+      padding(#px(0)),
     ])
 }
 
@@ -50,7 +55,7 @@ let make = (~onDone, ~initialColor=None) => {
     setFastHue(_ => v)
     startTransition(() => setHue(_ => v))
   }, [startTransition])
-  <div className={Styles.wrapper}>
+  <div className={Styles.wrapper(color->Lab.toString(P3))}>
     <HueSlider value=fastHue setValue={handleSetHue} />
     <React.Suspense fallback=React.null>
       <ShadePicker hue chroma lightness setChroma setLightness />
@@ -58,10 +63,9 @@ let make = (~onDone, ~initialColor=None) => {
         className={Styles.button(
           ~textColor=color
           ->Lab.getContrastColor(~tint=color->Lab.desaturate(~amount=0.7))
-          ->Lab.toP3
-          ->Lab.p3ToString,
-          ~highlightColor=color->Lab.lighten(5, _)->Lab.toP3->Lab.p3ToString,
-          color->Lab.toP3->Lab.p3ToString,
+          ->Lab.toString(P3),
+          ~highlightColor=color->Lab.lighten(5, _)->Lab.toString(P3),
+          color->Lab.toString(P3),
         )}
         onClick={_ => onDone(color)}>
         {j`✓`->React.string}

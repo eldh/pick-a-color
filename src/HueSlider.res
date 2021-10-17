@@ -67,7 +67,7 @@ let make = (~setValue, ~value: float) => {
       let ctx = c["getContext"](. "2d")
       for i in 0 to 500 {
         let deg = i->float_of_int *. 2. *. Js.Math._PI /. 500.
-        ctx["fillStyle"] = #lch(75., 132., deg, 1.)->Lab.fromLCH->Lab.toP3->Lab.p3ToString
+        ctx["fillStyle"] = #lch(75., 132., deg, 1.)->Lab.toString(P3)
         ctx["fillRect"](. i, 0, 1, 40)
       }
     })

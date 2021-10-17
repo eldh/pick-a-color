@@ -45,10 +45,7 @@ module ShadeCanvas = {
                 x->float_of_int->xToChroma *. 132. /. points,
                 hue,
                 1.,
-              )
-              ->Lab.fromLCH
-              ->Lab.toP3
-              ->Lab.p3ToString
+              )->Lab.toString(P3)
             ctx["fillRect"](. x * pointSizeInt, y * pointSizeInt, pointSizeInt, pointSizeInt)
           }
         }

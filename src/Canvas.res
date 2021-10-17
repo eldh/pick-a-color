@@ -9,7 +9,8 @@ let make = () => {
     ->Belt.Option.forEach(c => {
       let ctx = c["getContext"](. "2d")
       for hue in 0 to 500 {
-        ctx["fillStyle"] = Lab.hslToP3(#hsl(hue->float_of_int /. 500., 1., 0.5))->Lab.p3ToString
+        ctx["fillStyle"] =
+          Lab.hslToP3(#hsl(hue->float_of_int /. 500., 1., 0.5))->Lab.toLab->Lab.toString(P3)
         ctx["fillRect"](. hue, 0, 1, 40)
       }
     })

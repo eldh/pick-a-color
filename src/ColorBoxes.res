@@ -34,12 +34,15 @@ let make = (~colors, ~setColors) => {
                 setColors(oldColors =>
                   oldColors->Belt.Array.keep(oldColor => oldColor->Lab.getKey !== key)
                 )}
-              onEdit={newColor =>
-                setColors(oldColors =>
-                  oldColors->Belt.Array.map(oldColor =>
-                    oldColor->Lab.getKey === key ? newColor : oldColor
+              onEdit={newColor => {
+                if newColor->Lab.getKey !== key {
+                  setColors(oldColors =>
+                    oldColors->Belt.Array.map(oldColor =>
+                      oldColor->Lab.getKey === key ? newColor : oldColor
+                    )
                   )
-                )}
+                }
+              }}
             />
           })
           ->React.array

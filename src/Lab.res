@@ -232,26 +232,42 @@ let rec toCss = x =>
     }
   | #lch(_, _, _, _) as lch => lch->toCss
   }
-type colorFormat = P3 | LCH | LAB
+type colorFormat = P3 | LCH | LAB | URL
 let f = num => (num *. 100.)->Js.Math.round->(a => a /. 100.)->Js.Float.toString
 
 let rec toString = (color, format) =>
   switch (color, format) {
-  | (#lch(l, c, h, _), LCH) => `lch(${l->f} ${c->f} ${h->f})`
+  | (#lch(l, c, h, a), LCH) =>
+    `lch(${l->f}% ${c->f} ${(h *. 360. /. Js.Math._PI)->f}${a !== 1. ? " / " ++ a->f : ""})`
+  | (#lch(l, c, h, a), URL) => `${l->f},${c->f},${h->f},${a->f}`
   | (#lch(_, _, _, _) as lch, _) => lch->fromLCH->toString(_, format)
-  | (#lab(_, _, _, _) as lab, P3) =>
-    lab
+  | (#lab(_, _, _, _) as c, P3) =>
+    c
     ->toP3
     ->(
-      p3c =>
-        switch p3c {
-        | #p3(r, g, b, _a) => `p3(${r->f} ${g->f} ${b->f})`
+      v => {
+        switch v {
+        | #p3(r, g, b, a) =>
+          "color(display-p3 " ++
+          r->Belt.Float.toString ++
+          " " ++
+          g->Belt.Float.toString ++
+          " " ++
+          b->Belt.Float.toString ++
+          (a === 1. ? "" : " / " ++ a->Belt.Float.toString) ++ ")"
         }
+      }
     )
 
-  | (#lab(_, _, _, _) as lab, LCH) => lab->toLCH->toString(_, format)
-  | (#lab(l, a, b, _), LAB) => `lab(${l->f} ${a->f} ${b->f})`
+  | (#lab(_, _, _, _) as lab, URL)
+  | (#lab(_, _, _, _) as lab, LCH) =>
+    lab->toLCH->toString(format)
+  | (#lab(l, a, b, _), LAB) => `L: ${l->f} A: ${a->f} B: ${b->f}`
   }
+
+// let fromURL = string => {
+//   #lch(l, c, h, a)
+// }
 
 let getKey = x =>
   switch x {
@@ -262,18 +278,6 @@ let getKey = x =>
     h->Belt.Float.toString ++
     a->Belt.Float.toString
   }
-
-let p3ToString = p3 => {
-  switch p3 {
-  | #p3(r, g, b, _a) =>
-    "color(display-p3 " ++
-    r->Belt.Float.toString ++
-    " " ++
-    g->Belt.Float.toString ++
-    " " ++
-    b->Belt.Float.toString ++ ")"
-  }
-}
 
 let rgbToString = rgba => {
   switch rgba {
@@ -298,6 +302,12 @@ let lighten = (factor, x) =>
   switch x {
   | #lab(l, a, b, alpha) => #lab(clamp(0., 100., l +. (factor |> float_of_int)), a, b, alpha)
   | #lch(l, c, h, alpha) => #lch(clamp(0., 100., l +. (factor |> float_of_int)), c, h, alpha)
+  }
+
+let setAlpha = (v, x) =>
+  switch x {
+  | #lab(l, a, b, _) => #lab(l, a, b, v)
+  | #lch(l, c, h, _) => #lch(l, c, h, v)
   }
 
 let darken = (factor, c) => c |> lighten(factor * -1)
@@ -387,35 +397,20 @@ let getTextColor = (~level, ~size, initialColor) => {
   }
   let operator = l > 50. ? (a, b) => a -. b : (a, b) => a +. b
 
-  let naiveLDiff = 4.1292 *. getContrastFactor((level, size)) +. 19.8566
+  let contrastFactor = getContrastFactor((level, size))
+
+  // Formula is a linear regression based on the values from here: https://stackoverflow.com/questions/22031644/formula-for-contrast-ratio-threshold-in-cielab-space
+  // y=-0.4048x^{2}+13.5808x-7.0160
+  let naiveLDiff = 4.1292 *. contrastFactor +. 19.8566
+  // let naiveLDiff2 =
+  //   -0.4048 *. (contrastFactor *. contrastFactor) +. 13.5808 *. contrastFactor -. 7.0160
   let naiveL = operator(l, naiveLDiff)
   let retVal =
     naiveL > 100. || naiveL < 0.
       ? l > 50. ? #lch(0., 0., h, a) : #lch(100., 0., h, a)
-      : #lch(naiveL, naiveLDiff > 50. ? c *. 0.4 : c, h, a)
+      : #lch(naiveL, naiveLDiff > 50. ? c *. 0.4 : c *. 0.8, h, a)
 
-  // let increaseContrast = color => {
-  //   switch color {
-  //   | #lch(l, c, h, a) =>
-  //     if c < 10. {
-  //       l > 50. ? #lch(0., 0., h, a) : #lch(100., 0., h, a)
-  //     } else if l === 0. || l === 100. {
-  //       #lch(l, c *. 0.8, h, a)
-  //     } else {
-  //       #lch(clamp(0., 100., operator(l, step)), c, h, a)
-  //     }
-  //   }
-  // }
-  // let retVal = ref(increaseContrast(lch))
-  // let iterations = ref(0)
-
-  // while !isContrastOk(~level, ~size, initialColor, retVal.contents) && iterations.contents < 100 {
-  //   retVal := increaseContrast(retVal.contents)
-  //   iterations := iterations.contents + 1
-  // }
-  Js.log3(lch->toString(LCH), retVal->toLCH->toString(LCH), contrast(lch, retVal))
   retVal
-  // retVal.contents->toLCH
 }
 
 let getContrastColor = (

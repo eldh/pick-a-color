@@ -96,9 +96,40 @@ module TabBarPicker = {
   }
 }
 
+let toHash = color => {
+  color->Lab.toLCH->Lab.toString(URL)
+}
+
+let fromHash = str => {
+  let (l, c, h, a) = Js.String.match_(%re("/([\d+.\d+]+)/g"), str)->Obj.magic
+  #lch(
+    l->Js.Float.fromString,
+    c->Js.Float.fromString,
+    h->Js.Float.fromString,
+    a->Js.Float.fromString,
+  )
+}
+
+let setHash = str => {
+  RescriptReactRouter.push("#" ++ str)
+}
+let useColorFromHash = () => {
+  let url = RescriptReactRouter.useUrl()
+  switch url.hash {
+  | "" => None
+  | a => Some(Js.String.split(";", a)->Belt.Array.map(fromHash))
+  }
+}
+
 @react.component
 let make = () => {
-  let (colors, setColors) = React.useState(() => [])
+  let initialColor = useColorFromHash()
+  let (colors, setColors) = React.useState(() => initialColor->Belt.Option.getWithDefault([]))
+  let urlHash = colors->Belt.Array.joinWith(";", toHash)
+  React.useEffect1(() => {
+    urlHash->setHash
+    None
+  }, [urlHash])
   <>
     {colors->Belt.Array.length === 0
       ? <EmptyPicker colors setColors />
