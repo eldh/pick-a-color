@@ -7,8 +7,11 @@ let pointsInt = points->int_of_float
 let pointSize = size /. points
 let pointSizeInt = pointSize->int_of_float
 
-let xToChroma = (~max=points, x) => 2. *. x -. x *. x /. max
-let chromaToX = (~max=points, x) => max -. Js.Math.sqrt(max *. max -. max *. x)
+// Just use linear for now
+let xToChroma = (~max as _=points, x) => x
+let chromaToX = (~max as _=points, x) => x
+// let xToChroma = (~max=points, x) => 2. *. x -. x *. x /. max
+// let chromaToX = (~max=points, x) => max -. Js.Math.sqrt(max *. max -. max *. x)
 
 // Just use linear for now
 let yToLightness = (~max as _=points, x) => x
