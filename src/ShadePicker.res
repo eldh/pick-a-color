@@ -99,7 +99,7 @@ module Styles = {
     height(#vh(100.)),
     zIndex(1),
   ])
-  let wrapper = style(. [display(#flex), position(#relative), width(#px(500)), height(#px(40))])
+  let wrapper = style(. [display(#flex), position(#relative), width(#px(500)), height(#px(500))])
 }
 
 @react.component
