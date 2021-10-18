@@ -14,6 +14,15 @@ module Styles = {
       paddingBottom(#px(30)),
       unsafe("gap", "10px"),
     ])
+  let hasCopiedText = (~color, ~visible) =>
+    style(. [
+      position(#absolute),
+      top(#px(-30)),
+      left(#px(-10)),
+      unsafe("color", color),
+      transitionDuration(visible ? 150 : 750),
+      opacity(visible ? 1. : 0.),
+    ])
   let pickerWrapper = style(. [
     position(#fixed),
     display(#flex),
@@ -29,6 +38,7 @@ module Styles = {
   ])
   let button = (~color) =>
     style(. [
+      position(#relative),
       display(#flex),
       alignItems(#center),
       justifyContent(#center),
@@ -55,7 +65,13 @@ module Styles = {
 @react.component
 let make = (~color, ~onDelete, ~onEdit, ~onCopy) => {
   let lchColor = color->Lab.toLCH
+
+  let (hasCopied, setHasCopied) = React.useState(() => false)
   let (editing, setEditing) = React.useState(() => false)
+  React.useEffect1(() => {
+    let t = Js.Global.setTimeout(() => setHasCopied(_ => false), 2000)
+    Some(() => Js.Global.clearTimeout(t))
+  }, [hasCopied])
   <>
     {editing
       ? <div className={Styles.pickerWrapper}>
@@ -73,7 +89,17 @@ let make = (~color, ~onDelete, ~onEdit, ~onCopy) => {
         className={Styles.button(~color=color->ColorBoxText.getAAAATextColor)}
         role="button"
         tabIndex={0}
-        onClick={_ => onCopy()}>
+        onClick={_ => {
+          setHasCopied(_ => true)
+          onCopy()
+        }}>
+        <div
+          className={Styles.hasCopiedText(
+            ~color=color->ColorBoxText.getAAAATextColor->Lab.toString(P3),
+            ~visible=hasCopied,
+          )}>
+          {"Copied!"->React.string}
+        </div>
         <CopyIcon />
       </div>
       <div
