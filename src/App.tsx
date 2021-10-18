@@ -1,7 +1,9 @@
 import React from "react";
 import { make as ReApp } from "./App.bs";
 import { Fallback } from "./Fallback";
-const goodBrowser = CSS.supports("color", "lch(5% 10 10)");
+const goodBrowser = CSS.supports("color", "color(display-p3 10 10 10)");
+console.log(goodBrowser);
+
 function App() {
   return (
     <div
@@ -11,10 +13,10 @@ function App() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        minHeight: "100vh"
+        minHeight: "100vh",
       }}
     >
-      {goodBrowser || true ? <ReApp /> : <Fallback />}
+      {goodBrowser ? <ReApp /> : <Fallback />}
     </div>
   );
 }
