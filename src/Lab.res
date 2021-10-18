@@ -232,7 +232,7 @@ let rec toCss = x =>
     }
   | #lch(_, _, _, _) as lch => lch->toCss
   }
-type colorFormat = P3 | LCH | LAB | URL
+type colorFormat = P3 | LCH | LAB | URL | HEX
 let f = num => (num *. 100.)->Js.Math.round->(a => a /. 100.)->Js.Float.toString
 
 let rec toString = (color, format) =>
@@ -240,6 +240,24 @@ let rec toString = (color, format) =>
   | (#lch(l, c, h, a), LCH) =>
     `lch(${l->f}% ${c->f} ${(h *. 360. /. Js.Math._PI)->f}${a !== 1. ? " / " ++ a->f : ""})`
   | (#lch(l, c, h, a), URL) => `${l->f},${c->f},${h->f},${a->f}`
+  | (#lch(l, c, h, a) as lch, HEX) =>
+    lch
+    ->fromLCH
+    ->toRGB
+    ->(
+      c =>
+        switch c {
+        | #rgba(r, g, b, a) =>
+          "rgba(" ++
+          r->Belt.Int.toString ++
+          " " ++
+          g->Belt.Int.toString ++
+          " " ++
+          b->Belt.Int.toString ++
+          (a === 1. ? "" : " / " ++ a->Belt.Float.toString) ++ ")"
+        }
+    )
+
   | (#lch(_, _, _, _) as lch, _) => lch->fromLCH->toString(_, format)
   | (#lab(_, _, _, _) as c, P3) =>
     c
@@ -260,6 +278,7 @@ let rec toString = (color, format) =>
     )
 
   | (#lab(_, _, _, _) as lab, URL)
+  | (#lab(_, _, _, _) as lab, HEX)
   | (#lab(_, _, _, _) as lab, LCH) =>
     lab->toLCH->toString(format)
   | (#lab(l, a, b, _), LAB) => `L: ${l->f} A: ${a->f} B: ${b->f}`

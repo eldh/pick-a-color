@@ -85,7 +85,11 @@ let make = (~color as baseColor, ~onDelete, ~onEdit) => {
 
   let onCopy = () => {
     let stringsForColor = c => {
-      [c->Lab.toString(P3), c->Lab.toLCH->Lab.toString(LCH)]->Belt.Array.joinWith(" / ", a => a)
+      [
+        c->Lab.toString(P3),
+        c->Lab.toLCH->Lab.toString(LCH),
+        c->Lab.toString(HEX),
+      ]->Belt.Array.joinWith(" / ", a => a)
     }
     let variantsForColor = c => {
       base: c,
